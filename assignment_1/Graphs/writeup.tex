@@ -173,7 +173,7 @@ To measure the effect of iteration number on the output of the hill climbing alg
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{hill_climbing_5x5_iterations}
+    \includegraphics[width=0.9\textwidth]{hill_climbing_5x5_iterations_excel}
 \begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
  \hline
 Grid Side Length& Iteration Number &Average Value\\
@@ -193,7 +193,7 @@ For a 5 by 5 grid, the number of iterations does not seem to make much of a diff
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{hill_climbing_7x7_iterations}
+    \includegraphics[width=0.9\textwidth]{hill_climbing_7x7_iterations_excel}
 \begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
  \hline
 Grid Side Length& Iteration Number &Average Value\\
@@ -213,7 +213,7 @@ For a 7 by 7 grid, there is a much more marked increase in average value when it
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{hill_climbing_9x9_iterations}
+    \includegraphics[width=0.9\textwidth]{hill_climbing_9x9_iterations_excel}
 \begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
  \hline
 Grid Side Length& Iteration Number &Average Value\\
@@ -233,7 +233,7 @@ For a 9 by 9 grid, there is a large increase in average value when iteration num
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{hill_climbing_11x11_iterations}
+    \includegraphics[width=0.9\textwidth]{hill_climbing_11x11_iterations_excel}
 \begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
  \hline
 Grid Side Length& Iteration Number &Average Value\\
@@ -254,7 +254,6 @@ Grid Side Length& Iteration Number &Average Value\\
 For an 11 by 11 grid, increasing iteration number from 1,000 to 5,000 once again resulted in a steep increase in average value, while subsequent increases in iteration number led to diminishing returns. After 10,000 iterations, subsequent increases in iteration number lead to very small gains. This suggests that the optimal number of iterations that maximizes average value while minimizing computation time is 10,000 iterations for a 11 by 11 grid.
 
 
-
 \section*{Hill Climbing with Random Restarts}
 
 The next algorithm we tested was hill-climbing with random restarts. The idea was that a basic hill-climbing algorithm might get stuck at local maxima, where every change would result in a worse grid. In order to circumvent this problem, random restarts would cause the algorithm to start again with a random grid of the same size and run hill-climbing again, repeating the process and keeping track of the best grid.
@@ -265,7 +264,18 @@ All random restart tests were performed with a total of 10,000 iterations. This 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{random_restarts_5x5_restarts}
+    \includegraphics[width=0.9\textwidth]{random_restarts_5x5_restarts_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Restart Number &Average Value\\
+ \hline
+5&2&18.54\\
+5&5&18.96\\
+5&10&18.98\\
+5&50&16.86\\
+5&100&15.50\\
+ \hline
+\end{tabular}
     \caption{A graph showing the effects of restart number on final value for a puzzle of size 5 by 5.}
     \label{fig:random_restarts_5x5_restarts}
 \end{figure}
@@ -274,27 +284,59 @@ For a 5 by 5 grid, there is a small increase in average value when restart numbe
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{random_restarts_7x7_restarts}
+    \includegraphics[width=0.9\textwidth]{random_restarts_7x7_restarts_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Restart Number &Average Value\\
+ \hline
+7&2&38.48\\
+7&5&37.08\\
+7&10&33.70\\
+7&50&23.76\\
+7&100&20.40\\
+ \hline
+\end{tabular}
     \caption{A graph showing the effects of restart number on final value for a puzzle of size 7 by 7.}
     \label{fig:random_restarts_7x7_restarts}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{random_restarts_9x9_restarts}
+    \includegraphics[width=0.9\textwidth]{random_restarts_9x9_restarts_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Restart Number &Average Value\\
+ \hline
+9&2&62.60\\
+9&5&54.20\\
+9&10&43.78\\
+9&50&23.54\\
+9&100&19.22\\
+ \hline
+\end{tabular}
     \caption{A graph showing the effects of restart number on final value for a puzzle of size 9 by 9.}
     \label{fig:random_restarts_9x9_restarts}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{random_restarts_11x11_restarts}
+    \includegraphics[width=0.9\textwidth]{random_restarts_11x11_restarts_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Restart Number &Average Value\\
+ \hline
+11&2&82.62\\
+11&5&61.60\\
+11&10&44.26\\
+11&50&19.46\\
+11&100&17.16\\
+ \hline
+\end{tabular}
     \caption{A graph showing the effects of restart number on final value for a puzzle of size 11 by 11.}
     \label{fig:random_restarts_11x11_restarts}
 \end{figure}
 
-For grids of larger size, an increase in restart number leads to a decrease in average value, with larger grids leading to a steeper decline. For the hill climbing algorithm, the larger the grid was, the higher the optimal number of iterations was before the average value plateaued. Because an increase from 2 restarts to 5 decreases the number of iterations per restart from 5,000 to just 2,000, this suggests that perhaps there are not enough total iterations for an increase in the number of restarts to outweight the cost of decreasing the number of iterations per restart. For a 5 by 5 grid, which had an optimal iteration number of 1,000, having 5 restarts improved the average value, because having 2,000 iterations per restart was enough to reach the optimal value achievable by a hill climbing algorithm. For an 11 by 11 grid on the other hand, the optimal number of 
-
+For grids of larger size, an increase in restart number leads to a decrease in average value, with larger grids leading to a steeper decline. For the hill climbing algorithm, the larger the grid was, the higher the optimal number of iterations was before the average value plateaued. Because an increase from 2 restarts to 5 decreases the number of iterations per restart from 5,000 to just 2,000, this suggests that perhaps there are not enough total iterations for an increase in the number of restarts to outweight the cost of decreasing the number of iterations per restart. For a 5 by 5 grid, which had an optimal iteration number of 1,000, having 5 restarts improved the average value, because having 2,000 iterations per restart was enough to reach the optimal value achievable by a hill climbing algorithm. For an 11 by 11 grid on the other hand, the optimal number of iterations is 10,000, but the total number of iterations run was 10,000. This means that increasing the number of restarts, which decreased the number of iterations per restart, could only decrease the performance of the algorithm for an 11 by 11 grid.
 
 \section*{Hill Climbing with Random Walk}
 
@@ -390,6 +432,178 @@ Grid Side Length&Walk Threshold&Average Value\\
 At the largest grid size, the trend remains consistent. As before, the exponential decrease in average value as a result of the intial two threshold probability increases has increased. The lower limit of the average value is again fairly consistent as well. This is notable if only because it represents highlights the effects of the algorithm and illustrates what the average of purely randomized changes can produce as a best puzzle's value across all 4 grid sizes. \newline
 
 Overall, Random Walk seems to perform the best with threshold values approaching zero. It is possible that the average value could be improved over pure Hill Climbing at some probability incredibly close to zero, but this is likely only to be relevant at iteration numbers greatly surpassing 10000. A re-evaluation of threshold probabilities may give a slightly less homogenous curve, though the inverse correlation of average value and walk threshold as the probability approaches 1 is likely to remain consistent. For example, a range of probabilites much closer to zero: .00001, .0001, .001, .01. Due to resource constraints we were unable to perform this analysis.
+
+\section*{Simulated Annealing}
+
+A variation of random walk is known as simulated annealing. While random walk has a fixed probability that an inferior move will be chosen, simulated annealing instead uses the equation
+
+\begin{equation}
+e^{\frac{V(J') - V(j)}{T}}
+\end{equation}
+
+to calculate the chance that a worse move will be accepted, where V(J') is the value of the current grid, V(j) is the value of the best grid, and T is the temperature. When simulated annealing is run, an initial temperature is given, and it decays at a given rate every time an iteration completes. When temperature is high, negative changes are more likely to be accepted. When temperature is low, negative change are very unlikely to be accepted. We tested the average value of simulated annealing for various values of initial temperature and the decay rate.
+
+\subsection*{Varying Initial Temperature}
+
+All simulated annealing algorithms were run with 10,000 algorithms and a decay rate of 0.99. This means that the initial temperature is multiplied by 0.99 after every iteration.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_5x5_temperature_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Initial Temperature &Average Value\\
+ \hline
+5&0&18.32\\
+5&0.1&17.68\\
+5&0.5&17.46\\
+5&1&17.76\\
+5&5&14.68\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of initial temperature on final value for a puzzle of size 5 by 5.}
+    \label{fig:simulated_annealing_5x5_temperature}
+\end{figure}
+
+A larger initial temperature means that more detrimental moves will be accepted overall. In this graph, an initial temperature of 0 actually performs best, with a small decline as temperature increases before average value increases again as temperature reaches 1. Increasing initial temperature to 5 however results in a decrease in average value. This suggests that for smaller grids, a small initial temperature may be preferable. The optimal temperature seems to be 0 or 1.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_7x7_temperature_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Initial Temperature &Average Value\\
+ \hline
+7&0&38.56\\
+7&0.1&38.12\\
+7&0.5&38.38\\
+7&1&38.12\\
+7&5&29.34\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of initial temperature on final value for a puzzle of size 7 by 7.}
+    \label{fig:simulated_annealing_7x7_temperature}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_9x9_temperature_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Initial Temperature &Average Value\\
+ \hline
+9&0&66.04\\
+9&0.1&64.72\\
+9&0.5&63.96\\
+9&1&64.54\\
+9&5&44.34\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of initial temperature on final value for a puzzle of size 9 by 9.}
+    \label{fig:simulated_annealing_9x9_temperature}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_11x11_temperature_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Initial Temperature &Average Value\\
+ \hline
+11&0&92.24\\
+11&0.1&94.48\\
+11&0.5&93.44\\
+11&1&94.62\\
+11&5&76.42\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of initial temperature on final value for a puzzle of size 11 by 11.}
+    \label{fig:simulated_annealing_11x11_temperature}
+\end{figure}
+
+The same trend seems to hold true for grids of all other sizes, with the average value being highest between initial temperatures of 0 and 1 and then decreasing sharply when initial temperature is increased to 5. 11 is a slight outlier in that its optimal initial temperature is at 1 instead of 0, but all grids showed about constant average value between 0 and 1 before decreasing once initial temperature reached 5. Because an initial temperature of 0 means that the algorithm is essentially just hill climbing, an initial temperature of 1 seems to be optimal if you want to perform simulated annealing. This could be because it is high enough that inferior moves are chosen often enough to escape local maxima, while it is low enough that it doesn't devolve into a random walk.
+
+\subsection*{Varying Decay Rate}
+
+We also investigated changing the decay rate of the function. A lower decay rate means that temperature decreases more quickly, while a decay rate closer to 1 means that temperature decreases more slowly. For the following tests, we used 10,000 iterations and an initial temperature of 1.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_5x5_decay_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Decay Rate &Average Value\\
+ \hline
+5&0.1&17.80\\
+5&0.5&17.58\\
+5&0.9&17.26\\
+5&0.99&17.56\\
+5&0.999&16.64\\
+5&1&17.12\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of decay rate on final value for a puzzle of size 5 by 5.}
+    \label{fig:simulated_annealing_5x5_decay}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_7x7_decay_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Decay Rate &Average Value\\
+ \hline
+7&0.1&38.60\\
+7&0.5&38.62\\
+7&0.9&38.24\\
+7&0.99&38.08\\
+7&0.999&35.38\\
+7&1&32.86\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of decay rate on final value for a puzzle of size 7 by 7.}
+    \label{fig:simulated_annealing_7x7_decay}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_9x9_decay_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Decay Rate &Average Value\\
+ \hline
+9&0.1&64.64\\
+9&0.5&65.60\\
+9&0.9&65.00\\
+9&0.99&65.04\\
+9&0.999&60.70\\
+9&1&50.76\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of decay rate on final value for a puzzle of size 9 by 9.}
+    \label{fig:simulated_annealing_9x9_decay}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{simulated_annealing_11x11_decay_excel}
+\begin{tabular}{ |p{4cm}||p{4cm}|p{4cm}|  }
+ \hline
+Grid Side Length& Decay Rate &Average Value\\
+ \hline
+11&0.1&92.40\\
+11&0.5&93.80\\
+11&0.9&93.08\\
+11&0.99&90.52\\
+11&0.999&85.66\\
+11&1&63.96\\
+ \hline
+\end{tabular}
+    \caption{A graph showing the effects of decay rate on final value for a puzzle of size 11 by 11.}
+    \label{fig:simulated_annealing_11x11_decay}
+\end{figure}
+
+For all grid sizes, average value seems to increase very gradually as decay rate increases until reaching 0.99, and then average value steeply declines. Because a decay rate of 1 means that the temperature never goes down, this can be explained as the results being too random when decay rate is 1. Average value seems to increase slowly as decay rate increases from 0 to 0.99 because the lower decay rate is, the faster the algorithm devolves into hill climbing. 0.99 seems to be the optimal decay rate, where enough random walking is done at the beginning to escape local maxima while still doing enough hill climbing to maximize the value.
 
 \section*{Genetic Algorithm based upon a Population}
 

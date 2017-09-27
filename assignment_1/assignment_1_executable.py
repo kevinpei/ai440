@@ -25,7 +25,6 @@ def read_file(file_name):
     return arr
 
 
-	
 class puzzleGrid:
     
     #A constructor for intializing a map.
@@ -65,7 +64,7 @@ def show_GUI(arr):
 
 
 
-	#A function to return a matrix containing the number of steps required to reach each node in a given grid. If
+#A function to return a matrix containing the number of steps required to reach each node in a given grid. If
 #the node can't be reached, an 'X' appears there instead.
 #The show_gui argument determines whether to show a GUI at the conclusion of the function or not.
 def BFS(grid, show_gui):
@@ -133,7 +132,6 @@ def BFS(grid, show_gui):
         print("Best value is", best_value)
         show_GUI(result_matrix)
     return result_matrix
-	
 
 
 #This function computes the value function.
@@ -154,9 +152,7 @@ def compute_value(grid):
     else:
         value_function = result_matrix[n-1][n-1]
     return value_function
-	
-	
-	
+
 #Need to cover for equal values. If the random value is equal it has to be re-randomzied. 
 #Also, randomize x and y as well.
 
@@ -221,9 +217,7 @@ def hill_climbing(n, iterations, show_gui, return_grid):
         return best_grid
     else:
         return best_value
-		
-		
-		
+
 #A function to perform hill climbing with random restarts. The parameters are the size of the side of the grid,
 #the number of iterations per hill climb, and how many times to restart.
 #The show_gui argument determines whether to show a GUI at the conclusion of the function or not.
@@ -251,8 +245,6 @@ def random_restarts(n, iterations, restarts, show_gui):
     #Return the best grid
     return best_value
             
-			
-			
 #Parameters: inputGrid, number of iterations to perform, the probability 
 #The show_gui argument determines whether to show a GUI at the conclusion of the function or not.
 def random_walk(n, iterations, walkThresh, show_gui):
@@ -265,10 +257,12 @@ def random_walk(n, iterations, walkThresh, show_gui):
     best_iteration_number = 0
     #All grids are assumed to be n x n, so this stores the length of a side
     n = len(grid[0])
+    #What the fuck
+    random_grid = [i[:] for i in grid]
     #Keep running the hill climbing algorithm until the required number of iterations has been done
     for x in range(iterations):
         #Modify the new grid by changing one tile
-        new_grid = change_random_tile(best_grid)
+        new_grid = change_random_tile(random_grid)
         
         new_value = compute_value(new_grid)
         
@@ -281,13 +275,16 @@ def random_walk(n, iterations, walkThresh, show_gui):
             #If the new grid is better than the previous best grid, update all the bests
             if new_value >= best_value:
                 best_grid = [i[:] for i in new_grid]
+                random_grid = [i[:] for i in new_grid]
                 best_value = new_value
                 best_iteration_number = x
         #The random probability threshhold was not passed. Walk down, accept the change regardless of its relative value.
         else:
-            best_grid = [i[:] for i in new_grid]
-            best_value = new_value
-            best_iteration_number = x
+            random_grid = [i[:] for i in new_grid]
+            if new_value >= best_value:
+                best_grid = [i[:] for i in new_grid]
+                best_value = new_value
+                best_iteration_number = x
         
     
     #Show a GUI if you want to
@@ -296,8 +293,6 @@ def random_walk(n, iterations, walkThresh, show_gui):
         print("Best value is", best_value)
         show_GUI(best_grid)
     return best_value
-	
-	
 
 #A function to simulate annealing for the given grid.
 #grid is the grid to run it on, iterations states how many times to run the algorithm ,
@@ -316,28 +311,39 @@ def simulated_annealing(n, iterations, start_temperature, decay, show_gui):
     #This variable keeps track of the current temperature of the process
     temp = start_temperature
     #Keep running the hill climbing algorithm until the required number of iterations has been done
+
+    random_grid = [i[:] for i in best_grid]
     for x in range(iterations):
         #Modify the new grid by changing one tile
-        new_grid = change_random_tile(best_grid)
+        new_grid = change_random_tile(random_grid)
         
         new_value = compute_value(new_grid)
-    
-        #Calculate the probability of the change being accepted
-        #Because this results in a huge number if temp is exceedingly small, change temp_prob to 1 if an overflow error occurs
-        try:
-            temp_prob = m.exp((new_value - best_value) / temp)
-        except OverflowError:
-            temp_prob = 1
-        #Calculate a random value to compare to the temp_prob
-        randInt = r.random()
-
-        #The random probability threshhold is passed, accept it regardless of whether it's better
-        if randInt < temp_prob:
+        
+        #If the new value is better, always accept it
+        if new_value >= best_value:
             best_grid = [i[:] for i in new_grid]
-            if new_value >= best_value:
-                best_value = new_value
-                best_iteration_number = x
-        #The random probability threshhold was not passed, ignore the change
+            random_grid = [i[:] for i in new_grid]
+            best_value = new_value
+            best_iteration_number = x
+		
+        else:
+			#Calculate the probability of the change being accepted
+			#Because this results in a huge number if temp is exceedingly small, change temp_prob to 1 if an overflow error occurs
+            try:
+                temp_prob = m.exp((new_value - best_value) / temp)
+            except OverflowError:
+                temp_prob = 1
+            except ZeroDivisionError:
+                temp_prob = 0
+				
+			
+			#Calculate a random value to compare to the temp_prob
+            randInt = r.random()
+
+			#The random probability threshhold is passed, accept it regardless of whether it's better
+            if randInt < temp_prob:
+                random_grid = [i[:] for i in new_grid]
+			#The random probability threshhold was not passed, ignore the change
            
         #Decay the temperature according to the decay rate
         temp = temp * decay
@@ -491,16 +497,26 @@ def valid_algorithm(algorithm):
         return  4
     if algorithm.lower() == "genetic algorithm":
         return 5
+    if algorithm.lower() == "bfs":
+        return 6
     return 0
 	
 def main():
-    algorithm = input("Which algorithm do you want to use? ")
+    algorithm = input("Which algorithm do you want to use? Valid algorithms are hill climbing, random restarts, random walk, simulated annealing, genetic algorithm, and BFS. ")
     algorithm_number = valid_algorithm(algorithm)
     while algorithm_number == 0:
-        algorithm = input("The valid algorithms are hill climbing, random restarts, random walk, simulated annealing, and genetic algorithm. Which algorithm do you want to use?")
+        algorithm = input("Invalid algorithim. Try again.")
         algorithm_number = valid_algorithm(algorithm)
+   
+    if algorithm_number == 6:
+        file = read_file(input("Enter the file name containing a text array. "))
+        print(file)
+        BFS(file, 1)
+        return
+
     n = int(input("How large do you want the sides of the grid to be? "))
-    iterations = int(input("How many iterations do you want to run the algorithm? "))
+    iterations = int(input("How many iterations? "))
+
     if algorithm_number == 1:
         hill_climbing(n, iterations, 1, 0)
         return
@@ -509,12 +525,12 @@ def main():
         random_restarts(n, iterations, restarts, 1)
         return
     if algorithm_number == 3:
-        threshold = int(input("What do you want the probability of accepting a worse grid to be? "))
+        threshold = float(input("What do you want the probability of accepting a worse grid to be? "))
         random_walk(n, iterations, threshold, 1)
         return
     if algorithm_number == 4:
-        temp = int(input("What do you want the starting temperature to be? "))
-        decay = int(input("What do you want the decay rate to be? "))
+        temp = float(input("What do you want the starting temperature to be? "))
+        decay = float(input("What do you want the decay rate to be? "))
         simulated_annealing(n, iterations, temp, decay, 1)
         return
     if algorithm_number == 5:
@@ -522,5 +538,6 @@ def main():
         population = int(input("What do you want the population size to be? "))
         genetic_algorithm(n, iterations, crossover, population, 1)
         return
-		
-main()
+    
+while True:
+    main()
