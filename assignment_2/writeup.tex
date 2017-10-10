@@ -23,14 +23,30 @@
 
 \subsection*{Part b}
 
-Published
+Published = Yes : 3 P, 2 N
 \begin{equation}
-I(Yes,No) = -\frac{5}{12}\log_2(\frac{5}{12})-(\frac{7}{12})\log_2(\frac{7}{12}) = .9799
+E(Published = Yes) = -\frac{3}{5}\log_2(\frac{3}{5})-(\frac{2}{5})\log_2(\frac{2}{5}) = .9710
 \end{equation}
-\\
-Recommendations
+Published = No : 3 P, 4 N
 \begin{equation}
-I(Good, Normal) = -\frac{8}{12}\log_2(\frac{8}{12})-(\frac{4}{12})\log_2(\frac{4}{12}) = .9183 
+E(Published = No) = -\frac{3}{7}\log_2(\frac{3}{7})-(\frac{4}{7})\log_2(\frac{4}{7}) = .9852
+\end{equation}
+Published Average Entropy
+\begin{equation}
+I(Published) = \frac{5}{12}(.9710)+\frac{7}{12}(.9852) = .9792
+\end{equation}
+
+Recommendations = Good : 5 P, 3 N
+\begin{equation}
+E(Recommendations = Good) = -\frac{5}{8}\log_2(\frac{5}{8})-(\frac{3}{8})\log_2(\frac{3}{8}) = .9544
+\end{equation}
+Recommendations = Normal : 1 P, 3 N
+\begin{equation}
+E(Recommendations = Normal) = -\frac{1}{4}\log_2(\frac{1}{4})-(\frac{3}{4})\log_2(\frac{3}{4}) = .8113
+\end{equation}
+Recommendations Average Entropy
+\begin{equation}
+I(Recommendations) = \frac{8}{12}(.9544)+\frac{4}{12}(.8113) = .9067
 \end{equation}
 
 \end{document}
