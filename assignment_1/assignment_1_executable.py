@@ -21,6 +21,9 @@ def read_file(file_name):
         arr[x] = line.replace("\n", "").split(" ")
         x += 1
     file.close()
+    for x in range(n):
+        for y in range(n):
+            arr[x][y] = int(arr[x][y])
     #Return the finished array
     return arr
 
@@ -129,7 +132,6 @@ def BFS(grid, show_gui):
             depth += 1
     #Show a GUI if you want to
     if show_gui == 1:
-        print("Best value is", best_value)
         show_GUI(result_matrix)
     return result_matrix
 
@@ -257,7 +259,7 @@ def random_walk(n, iterations, walkThresh, show_gui):
     best_iteration_number = 0
     #All grids are assumed to be n x n, so this stores the length of a side
     n = len(grid[0])
-    #What the fuck
+
     random_grid = [i[:] for i in grid]
     #Keep running the hill climbing algorithm until the required number of iterations has been done
     for x in range(iterations):
