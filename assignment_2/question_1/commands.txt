@@ -1,0 +1,12 @@
+python dataClassifier.py
+(this runs the MostFrequent classifier on default numbers of training and test set)
+
+python dataClassifier.py -h
+(help with commands)
+
+python dataClassifier.py -c perceptron -t 5000 -s 1000
+(run the perceptron classifier with 5000 training images and 1000 test images)
+
+python dataClassifier.py -c mlp
+
+python dataClassifier.py -c svm
