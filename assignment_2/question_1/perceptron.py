@@ -41,18 +41,20 @@ class PerceptronClassifier:
     self.features = trainingData[0].keys() # could be useful later
     # DO NOT ZERO OUT YOUR WEIGHTS BEFORE STARTING TRAINING
 	
+#	Initialize all weights to randomly be either 0 or 1
     for x in range(10):
-	  for y in range(28):
-	    for z in range(28):
-	      self.weights[x][(y,z)] = r.randint(0,1)
+	  for y in self.features:
+	    self.weights[x][y] = r.randint(0,1)
 	
     for iteration in range(self.max_iterations):
       print "Starting iteration ", iteration, "..."
       for i in range(len(trainingData)):
-	  # Create a counter containing
+# 		Create a counter containing the sum of the weights times the value of the corresponding location on the graph
         sums = util.Counter()
+#		Multiply for each label 0-9
         for j in range(10):
           sums[j] = (trainingData[i] * self.weights[j])
+#		If the label was incorrect, then decrease the weights of the obtained label and increase the weights of the correct label
         if sums.argMax() != trainingLabels[i]:
           self.weights[sums.argMax()] -= trainingData[i]
           self.weights[trainingLabels[i]] += trainingData[i]
