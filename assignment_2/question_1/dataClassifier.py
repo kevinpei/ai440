@@ -181,6 +181,7 @@ def runClassifier(args, options):
   validationData = map(featureFunction, rawValidationData)
   testData = map(featureFunction, rawTestData)
   
+
   # Conduct training and testing
   print "Training..."
   classifier.train(trainingData, trainingLabels, validationData, validationLabels)
