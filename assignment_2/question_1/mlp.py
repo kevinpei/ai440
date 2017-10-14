@@ -3,6 +3,7 @@
 
 # mlp implementation
 import util
+import random as r
 PRINT = True
 
 class MLPClassifier:
@@ -49,11 +50,11 @@ class MLPClassifier:
 		      self.layer_weights[0][trainingLabels[i]] += trainingData[i]
 		  
 		  #EDIT THIS PART IT'S PROBABLY WRONG
-      #for x in range(1, self.layer_number):
-		  #wrong_label_error = self.layer_weights[x][sums.argMax()] - self.layer_weights[x-1][sums.argMax()]
-			#right_label_error = self.layer_weights[x][trainingLabels[i]] - self.layer_weights[x-1][trainingLabels[i]]
-		  #self.layer_weights[x][sums.argMax()] -= trainingData[i] + wrong_label_error * self.layer_weights[x][sums.argMax()]
-		  #self.layer_weights[x][trainingLabels[i]] += trainingData[i] + right_label_error * self.layer_weights[x][trainingLabels[i]]
+        for x in range(1, self.layer_number):
+          wrong_label_error = self.layer_weights[x][sums.argMax()] - self.layer_weights[x-1][sums.argMax()]
+          right_label_error = self.layer_weights[x][trainingLabels[i]] - self.layer_weights[x-1][trainingLabels[i]]
+          self.layer_weights[x][sums.argMax()] -= trainingData[i] + wrong_label_error * self.layer_weights[x][sums.argMax()]
+          self.layer_weights[x][trainingLabels[i]] += trainingData[i] + right_label_error * self.layer_weights[x][trainingLabels[i]]
 		  #END EDITING PART
 
     
