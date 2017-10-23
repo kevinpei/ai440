@@ -54,11 +54,11 @@ class MLPClassifier:
           self.layer_weights[1][trainingLabels[i]] += trainingData[i]
 		  
 		  #EDIT THIS PART IT'S PROBABLY WRONG
-		  for feature in self.features:
-		    wrong_output = self.sigmoid(self.layer_weights[0][sums.argMax()][feature] * trainingData[i][feature])
+          for feature in self.features:
+            wrong_output = self.sigmoid(self.layer_weights[0][sums.argMax()][feature] * trainingData[i][feature])
             self.layer_weights[0][sums.argMax()][feature] -= trainingData[i][feature] * wrong_output * (1 - output)
-			correct_output = self.sigmoid(self.layer_weights[0][trainingLabels[i]][feature] * trainingData[i][feature])
-			self.layer_weights[0][trainingLabels[i]][feature] += trainingData[i][feature] * correct_output * (1 - output)
+            correct_output = self.sigmoid(self.layer_weights[0][trainingLabels[i]][feature] * trainingData[i][feature])
+            self.layer_weights[0][trainingLabels[i]][feature] += trainingData[i][feature] * correct_output * (1 - output)
 		  #END EDITING PART
 
     
