@@ -22,7 +22,7 @@ class MLPClassifier:
         self.layer_weights[layer][label] = util.Counter() # this is the data-structure you should use
       
   def sigmoid(self, value):
-      return 1/(1 + m.exp(value))
+      return 1/(1 + m.exp(-value))
 	
   def train( self, trainingData, trainingLabels, validationData, validationLabels ):
   
