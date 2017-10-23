@@ -56,9 +56,9 @@ class MLPClassifier:
 		  #EDIT THIS PART IT'S PROBABLY WRONG
           for feature in self.features:
             wrong_output = self.sigmoid(self.layer_weights[0][sums.argMax()][feature] * trainingData[i][feature])
-            self.layer_weights[0][sums.argMax()][feature] -= trainingData[i][feature] * wrong_output * (1 - output)
+            self.layer_weights[0][sums.argMax()][feature] -= trainingData[i][feature] * wrong_output * (1 - wrong_output)
             correct_output = self.sigmoid(self.layer_weights[0][trainingLabels[i]][feature] * trainingData[i][feature])
-            self.layer_weights[0][trainingLabels[i]][feature] += trainingData[i][feature] * correct_output * (1 - output)
+            self.layer_weights[0][trainingLabels[i]][feature] += trainingData[i][feature] * correct_output * (1 - correct_output)
 		  #END EDITING PART
 
     
