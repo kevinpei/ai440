@@ -21,7 +21,7 @@ class MLPClassifier:
       for label in legalLabels:
         self.layer_weights[layer][label] = util.Counter() # this is the data-structure you should use
       
-  def sigmoid(value):
+  def sigmoid(self, value):
       return 1/(1 + m.exp(value))
 	
   def train( self, trainingData, trainingLabels, validationData, validationLabels ):
