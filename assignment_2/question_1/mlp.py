@@ -16,13 +16,17 @@ class MLPClassifier:
     self.type = "mlp"
     self.max_iterations = max_iterations
     self.layer_weights = {}
+	self.intermediate_value = util.Counter();
     for layer in range(2):
       self.layer_weights[layer] = {}
       for label in legalLabels:
         self.layer_weights[layer][label] = util.Counter() # this is the data-structure you should use
       
-  def sigmoid(self, value):
-      return 1/(1 + m.exp(-value))
+  def softmax(self, value, hidden_layer, trainingdata):
+    sum = 0
+    for feature in self.features:
+	  sum += m.exp(hidden_layer[feature] * trainingdata[feature])
+    return m.exp(value)/(m.exp(sum))
 	
   def train( self, trainingData, trainingLabels, validationData, validationLabels ):
   
@@ -43,21 +47,26 @@ class MLPClassifier:
         sums = util.Counter()
 #		Multiply for each label 0-9
         for j in range(10):
-          intermediate_value = util.Counter();
           for feature in self.features:
-            intermediate_value[feature] = self.sigmoid(trainingData[i][feature] * self.layer_weights[0][j][feature])
+            intermediate_value[feature] = self.softmax(trainingData[i][feature] * self.layer_weights[0][j][feature], self.layer_weights[0][j], trainingData[i])
           value = intermediate_value * self.layer_weights[1][j]
           sums[j] = value
 #		If the label was incorrect, then decrease the weights of the obtained label and increase the weights of the correct label
         if sums.argMax() != trainingLabels[i]:
-          self.layer_weights[1][sums.argMax()] -= trainingData[i]
-          self.layer_weights[1][trainingLabels[i]] += trainingData[i]
+          for feature in self.features:
+          self.layer_weights[1][sums.argMax()] -= (trainingData[i][feature] * self.intermediate_value[feature])
+          self.layer_weights[1][trainingLabels[i]] += (trainingData[i][feature] * self.intermediate_value[feature])
 		  
 		  #EDIT THIS PART IT'S PROBABLY WRONG
-          for feature in self.features:
-            wrong_output = self.sigmoid(self.layer_weights[0][sums.argMax()][feature] * trainingData[i][feature])
-            self.layer_weights[0][sums.argMax()][feature] -= trainingData[i][feature] * wrong_output * (1 - wrong_output)
-            correct_output = self.sigmoid(self.layer_weights[0][trainingLabels[i]][feature] * trainingData[i][feature])
+          for weight in self.features:
+            wrong_output = 0
+            for feature in self.features:
+              hj = self.softmax(trainingData[i][feature] * self.layer_weights[0][sums.argMax()][feature], self.layer_weights[0][sums.argMax()], trainingData[i])
+              wrong_output += ((self.softmax(trainingData[i][feature] * self.layer_weights[1][sums.argMax()][feature], self.layer_weights[1][sums.argMax()], trainingData[i]) - trainingData[i][feature]) * self.layer_weights[0][sums.argMax()][feature] * hj * (1 - hj))
+            self.layer_weights[0][sums.argMax()][weight] -= wrong_output
+            for feature in self.features:
+              hj = self.softmax(trainingData[i][feature] * self.layer_weights[0][trainingLabels[i]][feature], self.layer_weights[0][trainingLabels[i]], trainingData[i])
+              correct_output += ((self.softmax(trainingData[i][feature] * self.layer_weights[1][trainingLabels[i]][feature], self.layer_weights[1][trainingLabels[i]], trainingData[i]) - trainingData[i][feature]) * self.layer_weights[0][trainingLabels[i]][feature] * hj * (1 - hj))
             self.layer_weights[0][trainingLabels[i]][feature] += trainingData[i][feature] * correct_output * (1 - correct_output)
 		  #END EDITING PART
 
