@@ -6,24 +6,6 @@ import util
 import random as r
 import math as m
 PRINT = True
-
-class hiddenLayer:
-  def __init__(self, trainingData, weights):
-    self.weights = weights
-    self.features = trainingData.keys()
-    self.sum = 0
-    for feature in self.features:
-      self.sum += trainingData[feature] * self.weights[feature]
-	
-  def softmax(self, value):
-    return m.exp(value)/(m.exp(sum))
-	  
-  def backpropagate(self, output, trainingData):
-    sums = 0
-    for feature in self.features:
-      sums += (output[feature] - trainingData[feature]) * self.weights[feature] * (self.softmax(self, self.weights[feature]) * (1 - self.softmax(self, self.weights[feature])))
-    for feature in self.features:
-      self.weights[feature] -= sums
 	  
 class MLPClassifier:
   """
