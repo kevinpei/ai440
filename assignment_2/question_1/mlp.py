@@ -16,7 +16,7 @@ class MLPClassifier:
     self.type = "mlp"
     self.max_iterations = max_iterations
     self.layer_weights = {}
-	self.intermediate_value = util.Counter();
+    self.intermediate_value = util.Counter();
     for layer in range(2):
       self.layer_weights[layer] = {}
       for label in legalLabels:
@@ -54,8 +54,8 @@ class MLPClassifier:
 #		If the label was incorrect, then decrease the weights of the obtained label and increase the weights of the correct label
         if sums.argMax() != trainingLabels[i]:
           for feature in self.features:
-          self.layer_weights[1][sums.argMax()] -= (trainingData[i][feature] * self.intermediate_value[feature])
-          self.layer_weights[1][trainingLabels[i]] += (trainingData[i][feature] * self.intermediate_value[feature])
+            self.layer_weights[1][sums.argMax()] -= (trainingData[i][feature] * self.intermediate_value[feature])
+            self.layer_weights[1][trainingLabels[i]] += (trainingData[i][feature] * self.intermediate_value[feature])
 		  
 		  #EDIT THIS PART IT'S PROBABLY WRONG
           for weight in self.features:
