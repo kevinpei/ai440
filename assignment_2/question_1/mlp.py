@@ -7,6 +7,24 @@ import random as r
 import math as m
 PRINT = True
 
+class hiddenLayer:
+  def __init__(self, trainingData, weights):
+    self.weights = weights
+    self.features = trainingData.keys()
+    self.sum = 0
+    for feature in self.features:
+      self.sum += trainingData[feature] * self.weights[feature]
+	
+  def softmax(self, value):
+    return m.exp(value)/(m.exp(sum))
+	  
+  def backpropagate(self, output, trainingData):
+    sums = 0
+    for feature in self.features:
+      sums += (output[feature] - trainingData[feature]) * self.weights[feature] * (self.softmax(self, self.weights[feature]) * (1 - self.softmax(self, self.weights[feature])))
+    for feature in self.features:
+      self.weights[feature] -= sums
+	  
 class MLPClassifier:
   """
   mlp classifier
@@ -16,28 +34,26 @@ class MLPClassifier:
     self.type = "mlp"
     self.max_iterations = max_iterations
     self.layer_weights = {}
-    self.intermediate_value = util.Counter();
-    for layer in range(2):
-      self.layer_weights[layer] = {}
-      for label in legalLabels:
-        self.layer_weights[layer][label] = util.Counter() # this is the data-structure you should use
-      
-  def softmax(self, value, hidden_layer, trainingdata):
+    self.output_layer = {}
+    for label in legalLabels:
+      self.layer_weights[label] = util.Counter() # this is the data-structure you should use
+      self.output_layer[label] = 0
+
+  def softmax(self, value, sums):
     sum = 0
-    for feature in self.features:
-	  sum += m.exp(hidden_layer[feature] * trainingdata[feature])
-    return m.exp(value)/(m.exp(sum))
-	
+    for value in sums:
+      sum += m.exp(value)
+    return m.exp(value) / sum
+		
   def train( self, trainingData, trainingLabels, validationData, validationLabels ):
   
     self.features = trainingData[0].keys() # could be useful later
     # DO NOT ZERO OUT YOUR WEIGHTS BEFORE STARTING TRAINING
 	
   # Initialize the weights for both layers of the perceptrons to be either 0 or 1 randomly
-    for layer in range(2):
-      for x in range(10):
-        for y in self.features:
-          self.layer_weights[layer][x][y] = r.randint(0,1)
+    for x in range(10):
+      for y in self.features:
+        self.layer_weights[x][y] = r.randint(0,1)
   
     for iteration in range(self.max_iterations):
       print "Starting iteration ", iteration, "..."
@@ -47,28 +63,14 @@ class MLPClassifier:
         sums = util.Counter()
 #		Multiply for each label 0-9
         for j in range(10):
-          for feature in self.features:
-            intermediate_value[feature] = self.softmax(trainingData[i][feature] * self.layer_weights[0][j][feature], self.layer_weights[0][j], trainingData[i])
-          value = intermediate_value * self.layer_weights[1][j]
-          sums[j] = value
+          self.output_layer[j] = trainingData[i] * self.layer_weights[j]
+        for j in range(10):
+          sums[j] = self.softmax(self.output_layer[j], self.output_layer)
+        
 #		If the label was incorrect, then decrease the weights of the obtained label and increase the weights of the correct label
         if sums.argMax() != trainingLabels[i]:
-          for feature in self.features:
-            self.layer_weights[1][sums.argMax()] -= (trainingData[i][feature] * self.intermediate_value[feature])
-            self.layer_weights[1][trainingLabels[i]] += (trainingData[i][feature] * self.intermediate_value[feature])
-		  
-		  #EDIT THIS PART IT'S PROBABLY WRONG
-          for weight in self.features:
-            wrong_output = 0
-            for feature in self.features:
-              hj = self.softmax(trainingData[i][feature] * self.layer_weights[0][sums.argMax()][feature], self.layer_weights[0][sums.argMax()], trainingData[i])
-              wrong_output += ((self.softmax(trainingData[i][feature] * self.layer_weights[1][sums.argMax()][feature], self.layer_weights[1][sums.argMax()], trainingData[i]) - trainingData[i][feature]) * self.layer_weights[0][sums.argMax()][feature] * hj * (1 - hj))
-            self.layer_weights[0][sums.argMax()][weight] -= wrong_output
-            for feature in self.features:
-              hj = self.softmax(trainingData[i][feature] * self.layer_weights[0][trainingLabels[i]][feature], self.layer_weights[0][trainingLabels[i]], trainingData[i])
-              correct_output += ((self.softmax(trainingData[i][feature] * self.layer_weights[1][trainingLabels[i]][feature], self.layer_weights[1][trainingLabels[i]], trainingData[i]) - trainingData[i][feature]) * self.layer_weights[0][trainingLabels[i]][feature] * hj * (1 - hj))
-            self.layer_weights[0][trainingLabels[i]][feature] += trainingData[i][feature] * correct_output * (1 - correct_output)
-		  #END EDITING PART
+          
+
 
     
   def classify(self, data ):
@@ -77,10 +79,9 @@ class MLPClassifier:
     guesses = []
     for datum in data:
       vectors = util.Counter()
-      intermediate_value = util.Counter()
       for l in self.legalLabels:
-        for feature in self.features:
-          intermediate_value[feature] = self.sigmoid(datum[feature] * self.layer_weights[0][l][feature])
-        vectors[l] = intermediate_value * self.layer_weights[1][l]
+        self.output_layer[l] = datum * self.layer_weights[l]
+      for l in self.legalLabels:
+        vectors[l] = self.softmax(self.output_layer[l], self.output_layer)
       guesses.append(vectors.argMax())
     return guesses
