@@ -28,7 +28,10 @@ class MLPClassifier:
     sum = 0
     for label in self.legalLabels:
       sum += m.exp(sums[label])
-    return (m.exp(value) / sum)
+    try:
+      return (m.exp(value) / sum)
+    except ZeroDivisionError:
+      return 0
 		
   def train( self, trainingData, trainingLabels, validationData, validationLabels ):
   
@@ -57,9 +60,7 @@ class MLPClassifier:
         if sums.argMax() != trainingLabels[i]:
           for feature in self.features:
             self.layer_weights[sums.argMax()][feature] -= (trainingData[i][feature] * self.softmax_values[sums.argMax()] * (1 - self.softmax_values[sums.argMax()]))
-            if self.layer_weights[sums.argMax()][feature] < 0:
-              self.layer_weights[sums.argMax()][feature] = 0
-            self.layer_weights[trainingLabels[i]][feature] += (trainingData[i][feature] * self.softmax_values[trainingLabels[i]] * (1 - self.softmax_values[trainingLabels[i]]))
+            self.layer_weights[trainingLabels[i]][feature] += (trainingData[i][feature] * self.softmax_values[sums.argMax()] * (1 - self.softmax_values[sums.argMax()]))
     
   def classify(self, data ):
     self.features = data[0].keys()
