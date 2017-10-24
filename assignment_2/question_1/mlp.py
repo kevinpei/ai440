@@ -16,16 +16,19 @@ class MLPClassifier:
     self.type = "mlp"
     self.max_iterations = max_iterations
     self.layer_weights = {}
-    self.output_layer = {}
+    self.output_layer = util.Counter()
+    self.softmax_values = util.Counter()
     for label in legalLabels:
       self.layer_weights[label] = util.Counter() # this is the data-structure you should use
       self.output_layer[label] = 0
+      self.softmax_values[label] = 0
+
 
   def softmax(self, value, sums):
     sum = 0
-    for value in sums:
-      sum += m.exp(value)
-    return m.exp(value) / sum
+    for label in self.legalLabels:
+      sum += m.exp(sums[label])
+    return (m.exp(value) / sum)
 		
   def train( self, trainingData, trainingLabels, validationData, validationLabels ):
   
@@ -47,13 +50,16 @@ class MLPClassifier:
         for j in range(10):
           self.output_layer[j] = trainingData[i] * self.layer_weights[j]
         for j in range(10):
-          sums[j] = self.softmax(self.output_layer[j], self.output_layer)
+          self.softmax_values[j] = self.softmax(self.output_layer[j], self.output_layer)
+          sums[j] = self.softmax_values[j]
         
 #		If the label was incorrect, then decrease the weights of the obtained label and increase the weights of the correct label
         if sums.argMax() != trainingLabels[i]:
-          
-
-
+          for feature in self.features:
+            self.layer_weights[sums.argMax()][feature] -= (trainingData[i][feature] * self.softmax_values[sums.argMax()] * (1 - self.softmax_values[sums.argMax()]))
+            if self.layer_weights[sums.argMax()][feature] < 0:
+              self.layer_weights[sums.argMax()][feature] = 0
+            self.layer_weights[trainingLabels[i]][feature] += (trainingData[i][feature] * self.softmax_values[trainingLabels[i]] * (1 - self.softmax_values[trainingLabels[i]]))
     
   def classify(self, data ):
     self.features = data[0].keys()
