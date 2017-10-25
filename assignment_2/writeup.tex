@@ -7,6 +7,30 @@
 \graphicspath{ {/} }
 \begin{document}
 
+\section*{Question 1}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_1_3}
+    \caption{A graph showing percent correct of the training set as a function of the percentage of the training set used.}
+    \label{fig:question_1_3}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_1_4}
+    \caption{A graph showing percent correct of the test set as a function of the percentage of the training set used.}
+    \label{fig:question_1_4}
+\end{figure}
+
+Of the three algorithms tested, SVM appears to perform the best on both the training and test set, while MLP performs the worst. For perceptron, we took the dot product of the weights times the training data and selected the layer that had the highest dot product as our hypothesis. If the hypothesis was incorrect, then the training data was subtracted from the weights of the incorrect label and added to the weights of the correct label. For MLP, we used a softmax algorithm. The first layer takes the dot product of the weights times the training data and passes it as input to the softmax layer, which uses the following equation:
+
+\begin{equation}
+softmax(label = x) = \frac{e^{w_xt}}{\sum_{n=0}^{9}e^{w_nt}}
+\end{equation}
+
+Where t is the training data and there are 10 labels, 0-9. Then, the highest value of the softmax layer was used as the guess. If the hypothesis was incorrect, then the error was backpropagated to the weights layer by multiplying $y - h_w$ by $s(1-s)$, where y is the correct label, $h_w$ is the hypothesis, and s is the softmax value for that label. This was added to the weights for the correct and incorrect labels. SVM used the inbuilt SVM functions to maximize the margins between labels and guess that way. Overall, it seems like SVM overfit to the training data but still performed better than perceptron and MLP. MLP was the least well fit to the training data but still performed reasonably well on test data, indicating that it was more generalized than SVM. If SVM was trained on more data, there is a chance that it would have overfit to the data and actually performed worse than perceptron and MLP. MLP and perceptron on the other hand seem to have stagnated when 100\% data is used, showing very similar error rates from 50 - 100\% of the training data used. This may indicate that further training data may not greatly improve performance for MLP or perceptron.
+
 \section*{Question 2}
 
 \subsection*{Part a}
