@@ -296,6 +296,153 @@ h(x) = -x+4
     \caption{The plot with }
     \label{fig:question_4_plot_a}
 \end{figure}
+The initial line misclassifies exactly 4 samples. Coordinates are approxmiate. 
+\begin{tabular}{ |p{2cm}|p{3cm}|p{3cm}|p{6cm}|  }
+ \hline
+Sample& Classification&Classified as&Calculation\\
+ \hline
+(.10, .70)&Class 1&Class -1&$(1)(.1)+(-1)(.7)+(.2)(1) = -.4$\\
+(.30, .60)&Class 1&Class -1&$(1)(.3)+(-1)(.6)+(.2)(1) = -.1$\\
+(.95, .45)&Class -1&Class 1&$(1)(.95)+(-1)(.45)+(.2)(1) = .70$\\
+(.70, .65)&Class -1&Class 1&$(1)(.7)+(-1)(.65)+(.2)(1) = .25$\\
+ \hline
+\end{tabular}
+
+Selecting an arbitrary misclassified sample : (.3, .6) and running a weight update computation as follows:\\
+\\
+(.3, .6) is Class 1 and misclassifed as -1.\\
+$w_1 = 1+.3 = 1.3$\\
+$w_2= -1 + .6 = -.4$\\
+\begin{equation}
+y = -\frac{1.3}{-.4} - \frac{.2}{-.4}
+\end{equation}\\
+Producing a new linear separator represented by the following equation:\\
+\begin{equation}
+y = 3.25x_i + .5
+\end{equation}\\
+Graphed on the sample space: \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_4_plot_a_it1}
+    \caption{1st Iteration of Weight Update. New linear classifier and point used to produce it in Red.}
+    \label{fig:question_4_plot_a_it1}
+\end{figure}
+This new classifer misclassifes 3 samples and correctly classifies 5.
+Repeating this algorithm 4 more times:\\
+Iteration 2 \\
+(.7, .65) is Class -1 and misclassifed as 1.\\
+$w_1 = 1.3-.7 = .6$\\
+$w_2= -.4 - .65 = -1.05$\\
+\begin{equation}
+y = -\frac{.60}{-1.05} - \frac{.2}{-1.05}
+\end{equation}\\
+Producing a new linear separator represented by the following equation:\\
+\begin{equation}
+y = .57x_i + .19
+\end{equation}\\
+Graphed on the sample space: \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_4_plot_a_it2}
+    \caption{2nd Iteration of Weight Update. New linear classifier and point used to produce it in Blue.}
+    \label{fig:question_4_plot_a_it2}
+\end{figure}
+This new classifer misclassifes 3 samples and correctly classifies 5.\\
+Iteration 3 \\
+(.1, .7) is Class 1 and misclassifed as -1.\\
+$w_1 = .60+.10 = .70$\\
+$w_2= -1.05+.70= -.35$\\
+\begin{equation}
+y = -\frac{.70}{-.35} - \frac{.2}{-35}
+\end{equation}\\
+Producing a new linear separator represented by the following equation:\\
+\begin{equation}
+y = 2x_i + .7
+\end{equation}\\
+Graphed on the sample space: \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_4_plot_a_it3}
+    \caption{3rd Iteration of Weight Update. New linear classifier and point used to produce it in Green.}
+    \label{fig:question_4_plot_a_it3}
+\end{figure}
+This new classifer misclassifes 3 samples and correctly classifies 5.\\
+
+Iteration 4 \\
+(.35, .95) is Class -1 and misclassifed as 1.\\
+$w_1 = .70-.35 = .35$\\
+$w_2= -.35-.95 = -1.30$\\
+\begin{equation}
+y = -\frac{.35}{-1.30} - \frac{.2}{-1.3}
+\end{equation}\\
+Producing a new linear separator represented by the following equation:\\
+\begin{equation}
+y = .27x_i + .15
+\end{equation}\\
+Graphed on the sample space: \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_4_plot_a_it4}
+    \caption{4th Iteration of Weight Update. New linear classifier and point used to produce it in Purple.}
+    \label{fig:question_4_plot_a_it4}
+\end{figure}
+This new classifer misclassifes 3 samples and correctly classifies 5.\\
+
+Iteration 5 \\
+(.95, .45) is Class -1 and misclassifed as 1.\\
+$w_1 = .35+.95 = .60$\\
+$w_2= -1.3-.45= -1.75$\\
+\begin{equation}
+y = -\frac{.60}{-1.75} - \frac{.2}{-1.75}
+\end{equation}\\
+Producing a new linear separator represented by the following equation:\\
+\begin{equation}
+y = .34x_i + .11
+\end{equation}\\
+Graphed on the sample space: \\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_4_plot_a_it5}
+    \caption{5th Iteration of Weight Update. New linear classifier and point used to produce it in Pink.}
+    \label{fig:question_4_plot_a_it5}
+\end{figure}
+This new classifer misclassifes 2 samples and correctly classifies 6.\\
+
+We believe that the classifer we calculated in this part of the question failied to arrive at perfect classification because our rate of learning, or alpha value, was too high. We defaulted to an alpha of 1 for simplicity but we believe a smaller alpha is more likely to produce an optimal solution.
+
+\subsection*{Part b}
+The classifer in Part a did not reach perfect classification.
+We have determined that the arbitrary set of weights:\\
+$w_1 = -.154$\\
+$w_2 = -.22$\\
+$w_0 = .2$\\
+With the equation 
+\begin{equation}
+y = -.7x_i + .9
+\end{equation}
+That will produce a perfect linear separator as graphed on the sample space:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_4_plot_b}
+    \caption{Perfect linear classifier for sample space graphed in Orange.}
+    \label{fig:question_4_plot_b}
+\end{figure}
+
+\subsection*{Part c}
+Removing one dimesion of the sample space only permitted the separation of samples by their i1 values and true classification. The removal of i2 also forces a straight vertical line classifier. We determined the optimal weight for this vertical line classifer to be defined by the equation and weights:\\
+$w_0 = .65$
+$w_1 = -1$
+\begin{equation}
+x = -\frac{w_o}{w_1} = -\frac{.65}{-1} = .65
+\end{equation}
+Graphed on the sample space:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{question_4_plot_c}
+    \caption{Perfect linear classifier for sample space graphed in black. Left of the classifier is Class 1. Right of the classifier is Class -1.}
+    \label{fig:question_4_plot_b}
+\end{figure}
+The classifier separates the sample space with a vertical line at $x=.65$ with an error of 2 misclassified. We believe this is the optimal solution and that other proposed perceptrons will have a higher error for this lower-dimension sample space. 
 
 \section*{Question 5}
 
