@@ -3,7 +3,7 @@ def readStart(filename):
     start = data.readline()
     data.close()
     coordinates = start.split("\n")[0].split(",")
-    return (float(coordinates[0]), float(coordinates[1]))
+    return (int(coordinates[0]), int(coordinates[1]))
 
 def readGoal(filename):
     data = open(filename)
@@ -11,7 +11,7 @@ def readGoal(filename):
     goal = data.readline()
     data.close()
     coordinates = goal.split("\n")[0].split(",")
-    return (float(coordinates[0]), float(coordinates[1]))
+    return (int(coordinates[0]), int(coordinates[1]))
 
 def createGrid(filename, rows):
     data = open(filename)
