@@ -1,12 +1,21 @@
 
 # coding: utf-8
 
+# In[1]:
+
+
 #Importing all necessary libraries
 import tkinter as tk
 import random as r
 import math as m
 import wx
 import wx.grid
+from timeit import default_timer as timer
+#from IPython.core.debugger import set_trace
+
+
+# In[2]:
+
 
 #Reads the start coordinates from the given file
 def readStart(filename):
@@ -35,6 +44,11 @@ def createGrid(filename, rows):
         grid.append(list(data.readline().split("\n")[0]))
     data.close()
     return grid
+    
+
+
+# In[3]:
+
 
 #A class to represent a node on the map. It has a variable to keep track of the type of terrain and whether it has a highway
 class mapNode:
@@ -238,6 +252,10 @@ class puzzleGrid:
             for j in range(height):
                 tk.Label(master, text = (str(inArray[i][j].block) + ',' + str(inArray[i][j].highway)), padx = 0, pady = 0, relief = "sunken").grid(row=i, column=j)
 
+
+# In[4]:
+
+
 #Performs a binary insertion, placing a new vertex in sorted order.
 def vertexInsert(vertexList, vertex, start, end):
     m = (start + end)//2
@@ -247,7 +265,13 @@ def vertexInsert(vertexList, vertex, start, end):
     if vertexList[m].fVal < vertex.fVal:
         vertexInsert(vertexList, vertex, m, end)
     else:
-        vertexInsert(vertexList, vertex, start, m)
+        if vertexList[m].fVal == vertex.fVal:
+            if vertexList[m].gVal > vertex.gVal:
+                vertexInsert(vertexList, vertex, m, end)
+            else:
+                vertexInsert(vertexList, vertex, start, m)
+        else:
+            vertexInsert(vertexList, vertex, start, m)
 #Automatically performs a binary insertion on a list of vertices.
 def vertexPush(vertexList, vertex):
     vertexInsert(vertexList, vertex, 0, len(vertexList))
@@ -256,6 +280,47 @@ def vertexPop(vertexList):
     return vertexList.pop(0)
 def vertexPeek(vertexList):
     return vertexList[0]
+
+
+# In[5]:
+
+
+# 0 - ANCHOR HEURISTIC, EUCLIDEAN DISTANCE
+def euclideanDistance(vertex, goalCoordinate):
+    return .25 * m.sqrt((goalCoordinate[0] - vertex.coordinate[0]) ** 2 + (goalCoordinate[1] - vertex.coordinate[1]) ** 2)
+
+# 1 - MANHANTTAN TRANSFER
+def manhattanTransfer(vertex, goalCoordinate):
+    xDistance = m.fabs(goalCoordinate[0]-vertex.coordinate[0])
+    yDistance = m.fabs(goalCoordinate[1]-vertex.coordinate[1])
+    return xDistance+yDistance
+
+# 2 - NOTORIOUS B.I.G. EUCLIDEAN SQUARED
+def notoriousBIG(vertex, goalCoordinate):
+    return (goalCoordinate[0] - vertex.coordinate[0]) ** 2 + (goalCoordinate[1] - vertex.coordinate[1]) ** 2
+        
+# 3 - HIGHWAYSTAR
+def highwayStar(vertex):
+    if vertex.terrain == 'a':
+        return 0
+    elif vertex.terrain == 'b':
+        return 1
+    elif vertex.terrain == '1':
+        return 5
+    else:
+        return 10
+        
+# 4 - WHITESNAKE DIAGONAL DISTANCE      
+def whiteSnake(vertex, goalCoordinate):
+    xDistance = m.fabs(goalCoordinate[0]-vertex.coordinate[0])
+    yDistance = m.fabs(goalCoordinate[1]-vertex.coordinate[1])
+    #m.sqrt(2) - 2 * min(xDistance, yDistance) is how much is saved by going diagonally instead of Manhattan
+    return 0.25 * (xDistance + yDistance + (m.sqrt(2) - 2) * min(xDistance, yDistance))
+
+
+# In[6]:
+
+
 
 #Dictionary containing inferred costs for each terrain type. Use to calculate cost for traveling between cells.
 costOf = {"1": 1, "2": 2, "a":.25, "b":.5}
@@ -276,7 +341,9 @@ class vertex:
         self.hVal = hVal
 
 class aStarSearcher:
-    def __init__(self, gridWorld, startCoordinate, goalCoordinate):
+    def __init__(self, gridWorld, startCoordinate, goalCoordinate, hID):
+        self.start = timer()
+        self.end = 0
         #Initializing search variables
         self.gridWorld = gridWorld
         self.startCoordinate = startCoordinate
@@ -284,16 +351,37 @@ class aStarSearcher:
         
         self.fringe = []
         self.closedList = {}
+        
+        #Initializing heuristic ID value
+        self.hID = hID
     
     #Euclidean distance heuristic, for use while prototyping A* search
     def getEuclideanDistance(self, coordinate1, coordinate2):
-        return m.sqrt((coordinate2[0] - coordinate1[0]) ** 2 + (coordinate2[1] - coordinate1[1]) ** 2)
+        return 0.25 * m.sqrt((coordinate2[0] - coordinate1[0]) ** 2 + (coordinate2[1] - coordinate1[1]) ** 2)
+    
+    def getHeuristic(self, vertex, goalCoordinate, hID):
+        if hID == 0:
+            return euclideanDistance(vertex, goalCoordinate)
+        elif hID == 1:
+            return manhattanTransfer(vertex, goalCoordinate)
+        elif hID == 2: 
+            return notoriousBIG(vertex, goalCoordinate)
+        elif hID == 3:
+            return highwayStar(vertex)
+        elif hID == 4:
+            return whiteSnake(vertex, goalCoordinate)
+        else:
+            return None
     
     def getPath(self, current):
         totalPath = [current.coordinate]
         while current.parent != current:
             current = current.parent
             totalPath.append(current.coordinate)
+        self.end = timer()
+        print("Time elapsed is", self.end - self.start, "seconds")
+        print("Path is", len(totalPath), "nodes long")
+        print(len(self.closedList), "nodes explored")
         return totalPath
 
     #Identifies the valid (nothing off grid) neighboring cells of the 8 adjacent cells to a coordinate and returns a list containing these neighbors initialized to vertices
@@ -309,11 +397,9 @@ class aStarSearcher:
             for y in range(-1, 2):
                 #Skipping the coordinate itself to avoid having 9 coordiantes
                 if (x != 0 and y != 0) or ((x != parentCoordinate[0]) and (y != parentCoordinate[1])):
-                    try:
+                    if not (coordinate[0] + x < 0 or coordinate[1] + y < 0 or coordinate[0] + x > 119 or coordinate[1] + y > 159):
                         if (self.gridWorld[coordinate[0]+x][coordinate[1]+y] != '0'):
                             neighbors.append(vertex((coordinate[0]+x, coordinate[1]+y), None, self.gridWorld[coordinate[0]+x][coordinate[1]+y], 0, 0, 0))
-                    except IndexError:
-                        continue    
         return neighbors
     
     #Checks if the vertex is in the heap, priority queue fringe. Accepts a vertex class object and returns True or False
@@ -339,10 +425,10 @@ class aStarSearcher:
         
     def updateVertex(self, current, successor):
         #If the successor is new (infinite g value)
-        if current.gVal + self.getEuclideanDistance(current.coordinate, successor.coordinate) < successor.gVal:
+        if current.gVal + self.getCost(current, successor) < successor.gVal:
             #Assigning f,g,h values and parent to successor
             successor.gVal = current.gVal + self.getCost(current, successor)
-            successor.hVal = 0.25 * self.getEuclideanDistance(successor.coordinate, self.goalCoordinate)
+            successor.hVal = self.getHeuristic(successor, self.goalCoordinate, self.hID)
             successor.fVal = successor.gVal + successor.hVal
             successor.parent = current
             
@@ -353,12 +439,12 @@ class aStarSearcher:
 
     #Will be using euclidean distance heuristic written by K. Pei, should make algorithm modular as we develop the project.        
     def aStarSearch(self):
-    
+        
         #Initializing start vertex
         #Must be an unblocked cell
         startVertex = vertex(self.startCoordinate, None, 1, 0, 0, 0)
         startVertex.parent = startVertex
-        startVertex.hVal = self.getEuclideanDistance(startVertex.coordinate, self.goalCoordinate)
+        startVertex.hVal = self.getHeuristic(startVertex, self.goalCoordinate, self.hID)
         startVertex.fVal = startVertex.gVal + startVertex.hVal
     
         #Adding the start vertice to the fringe
@@ -369,7 +455,6 @@ class aStarSearcher:
             search = vertexPop(self.fringe)
             #Checking if goal found
             if search.coordinate[0] == self.goalCoordinate[0] and search.coordinate[1] == self.goalCoordinate[1]:
-                print("Path found")
                 return self.getPath(search)
             #Setting current node to have been visited and checked
             self.closedList[search.coordinate] = search
@@ -386,10 +471,19 @@ class aStarSearcher:
                         successor.parent = None
                     #Update the values of the fringe nodes based on the new current node (popped from fringe)
                     self.updateVertex(search, successor)
+        print("No path found");
+        self.end = timer()
+        print("Time elapsed is", self.end - self.start, "seconds")
+        print(len(self.closedList), "nodes explored")
         return None
 
+
+# In[7]:
+
+
 class weightedAStarSearcher(aStarSearcher):
-    def __init__(self, gridWorld, startCoordinate, goalCoordinate, weight, algoType):
+    def __init__(self, gridWorld, startCoordinate, goalCoordinate, hID, weight, algoType):
+        self.start = timer()
         #Initializing search variables
         self.gridWorld = gridWorld
         self.startCoordinate = startCoordinate
@@ -401,6 +495,23 @@ class weightedAStarSearcher(aStarSearcher):
         
         self.fringe = []
         self.closedList = {}
+        
+        #Initializing Heuristic ID
+        self.hID = hID
+    
+    def updateVertex(self, current, successor):
+        #If the successor is new (infinite g value)
+        if current.gVal + self.getCost(current, successor) < successor.gVal:
+            #Assigning f,g,h values and parent to successor
+            successor.gVal = current.gVal + self.getCost(current, successor)
+            successor.hVal = self.weight * self.getHeuristic(successor, self.goalCoordinate, self.hID)
+            successor.fVal = successor.gVal + successor.hVal
+            successor.parent = current
+            
+            #Updates priority of successor by removing and readding the successor to the fringe. Otherwise adds new successor to fringe
+            if self.inFringe(successor):
+                self.fringe.remove(successor)
+            vertexPush(self.fringe, successor)
     
     #Will be using euclidean distance heuristic written by K. Pei, should make algorithm modular as we develop the project.        
     def weightedSearch(self):
@@ -408,8 +519,8 @@ class weightedAStarSearcher(aStarSearcher):
         #Must be an unblocked cell
         startVertex = vertex(self.startCoordinate, None, 1, 0, 0, 0)
         startVertex.parent = startVertex
-        startVertex.hVal = 0.25 * self.getEuclideanDistance(startVertex.coordinate, self.goalCoordinate)
-        startVertex.fVal = startVertex.gVal + (self.weight * startVertex.hVal)
+        startVertex.hVal = self.weight * self.getHeuristic(startVertex, self.goalCoordinate, self.hID)
+        startVertex.fVal = startVertex.gVal + startVertex.hVal
     
         #Adding the start vertice to the fringe
         vertexPush(self.fringe, startVertex)
@@ -419,7 +530,6 @@ class weightedAStarSearcher(aStarSearcher):
             search = vertexPop(self.fringe)
             #Checking if goal found
             if search.coordinate[0] == self.goalCoordinate[0] and search.coordinate[1] == self.goalCoordinate[1]:
-                print("Path found")
                 return self.getPath(search)
             #Setting current node to have been visited and checked. OH WAIT ARRAYS CAN'T BE FUCKING DICTIONARY KEYS
             self.closedList[search.coordinate] = search
@@ -432,37 +542,45 @@ class weightedAStarSearcher(aStarSearcher):
                 #Checking if successor was already visited
                 if (successor.coordinate in self.closedList) == False:
                     #Checking if successor is not in the fringe, it is a new successor. Assign g and parent
-                    if self.inFringe(successor) is not True:
+                    if not self.inFringe(successor):
                         successor.gVal = float('inf')
                         successor.parent = None
                     #Update the values of the fringe nodes based on the new current node (popped from fringe)
                     self.updateVertex(search, successor)
+        print("No path found")
+        self.end = timer()
+        print("Time elapsed is", self.end - self.start, "seconds")
+        print(len(self.closedList), "nodes explored")
         return None
+
+
+# In[8]:
+
 
 #The panel that contains the grid
 class gridPanel(wx.Panel):
-    def __init__(self, parent, gridWorld, closedList, textPanel, nodes, seq=0):
+    def __init__(self, parent, gridWorld, closedList, path, textPanel, nodes, seq=0):
         wx.Panel.__init__(self, parent=parent)
         self.closedList = closedList
         self.textPanel = textPanel
-        self.grid = self.showGrid(gridWorld, nodes)
+        self.seq = seq
+        self.grid = self.showGrid(gridWorld, path, nodes)
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, self.onSelect)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.grid, 0, wx.EXPAND)
         self.SetSizer(sizer)
-        self.seq = seq
-
         
     #A method to show the grid given as input
-    def showGrid(self, gridWorld, nodes):
-        grid = wx.grid.Grid(self, size=(1200, 600))
+    def showGrid(self, gridWorld, path, nodes):
+        grid = wx.grid.Grid(self, size=(1200, 550))
         grid.CreateGrid(120, 160)
-        grid.SetLabelFont(wx.Font(1, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+        grid.SetLabelFont(wx.Font(7, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
+        grid.SetDefaultCellFont(wx.Font(7, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
         #Color the grid depending on the terrain
         for x in range(120):
             for y in range(160):
+                grid.SetCellValue((x, y), gridWorld[x][y])
                 attr = self.cellAttr = wx.grid.GridCellAttr()
-                color = (0, 0, 0)
                 if gridWorld[x][y] == '0':
                     color = (255,0,0)
                 elif gridWorld[x][y] == '1':
@@ -473,20 +591,25 @@ class gridPanel(wx.Panel):
                     color = (0, 125, 0)
                 elif gridWorld[x][y] == 'b':
                     color = (125, 125, 0)
-                if nodes[0][0] == x and nodes[0][1] == y:
-                    color = (255, 255, 255)
-                elif nodes[1][0] == x and nodes[1][1] == y:
-                    color = (0, 0, 255)
                 attr.SetBackgroundColour(color)
                 grid.SetAttr(x, y, attr)
+        for node in path:
+            attr = self.cellAttr = wx.grid.GridCellAttr()
+            color = (255, 255, 255)
+            if nodes[0][0] == node[0] and nodes[0][1] == node[1]:
+                color = (125, 125, 125)
+            elif nodes[1][0] == node[0] and nodes[1][1] == node[1]:
+                 color = (0, 0, 255)
+            attr.SetBackgroundColour(color)
+            grid.SetAttr(node[0], node[1], attr)
         for x in range(120):
-            grid.SetRowLabelValue(x, "")
+            grid.SetRowLabelValue(x, str(x+1))
         grid.SetDefaultRowSize(5, True)
         for y in range(160):
-            grid.SetColLabelValue(y, "")
+            grid.SetColLabelValue(y, str(y+1))
         grid.SetDefaultColSize(5, True)
-        grid.SetColLabelSize(0) 
-        grid.SetRowLabelSize(0) 
+        #grid.SetColLabelSize(0) 
+        #grid.SetRowLabelSize(0) 
         return grid
 
     #Change the values of each of the heuristics when a grid cell is selected
@@ -542,6 +665,10 @@ class gridPanel(wx.Panel):
                 self.textPanel.hVal5.SetLabel("h value: Infinity")
                 self.textPanel.fVal5.SetLabel("f value: Infinity")
 
+
+# In[9]:
+
+
 #The panel that contains the text for f value, g value, and h value
 class textPanel(wx.Panel):
     def __init__(self, parent, seq=0):
@@ -560,7 +687,7 @@ class textPanel(wx.Panel):
             self.gVal2 = wx.StaticText(self, 10, "g Value: 0", size=(200,40), pos=(225, 40))
             self.hVal2 = wx.StaticText(self, 10, "h Value: 0", size=(200,40), pos=(475, 40))
             self.fVal2 = wx.StaticText(self, 10, "f Value: 0", size=(200,40), pos=(725, 40))
-            self.heuristic3 = wx.StaticText(self, 10, "Diagonal Favorer", size=(100,25), pos=(25, 80))
+            self.heuristic3 = wx.StaticText(self, 10, "Euclidean Squared", size=(100,25), pos=(25, 80))
             self.gVal3 = wx.StaticText(self, 10, "g Value: 0", size=(200,40), pos=(225, 80))
             self.hVal3 = wx.StaticText(self, 10, "h Value: 0", size=(200,40), pos=(475, 80))
             self.fVal3 = wx.StaticText(self, 10, "f Value: 0", size=(200,40), pos=(725, 80))
@@ -577,26 +704,31 @@ class textPanel(wx.Panel):
 class aStar(wx.Frame):
     
     #Constructor for the application is the same as the constructor for wx.Frame
-    def __init__(self, parent, title, gridWorld, closedList, nodes, seq=0):
-        super(aStar, self).__init__(parent, title=title, size=(1200, 850))
+    def __init__(self, parent, title, gridWorld, closedList, path, nodes, seq=0):
+        super(aStar, self).__init__(parent, title=title, size=(1200, 800))
         self.seq = seq
-        self.initUI(gridWorld, closedList, nodes)
+        self.initUI(gridWorld, closedList, path, nodes)
         self.Centre()
         self.Show()
     
     #A function to initialize the UI with the grid
-    def initUI(self, gridWorld, closedList, nodes):
+    def initUI(self, gridWorld, closedList, path, nodes):
         vbox = wx.BoxSizer(wx.VERTICAL)
         splitter = wx.SplitterWindow(self)
         text = textPanel(splitter, self.seq)
-        grid = gridPanel(splitter, gridWorld, closedList, text, nodes, self.seq)
+        grid = gridPanel(splitter, gridWorld, closedList, path, text, nodes, self.seq)
         splitter.SplitHorizontally(grid, text)
-        splitter.SetMinimumPaneSize(600)
+        splitter.SetMinimumPaneSize(550)
         vbox.Add(splitter, proportion=0, flag=wx.EXPAND)
         self.SetSizer(vbox)
 
+
+# In[10]:
+
+
 class seqAStarSearcher(aStarSearcher):
     def __init__(self, gridWorld, startCoordinate, goalCoordinate):
+        self.start = timer()
         #Initializing search variables
         self.gridWorld = gridWorld
         self.startCoordinate = startCoordinate
@@ -607,15 +739,27 @@ class seqAStarSearcher(aStarSearcher):
         self.w2 = 2.00
         
         #Initialzing sequential search fringes
-        #Using 4 additional heuristics (Anchor(0), ManhattanTransfer(1), NotoriousBIG(2), HighWayStar(3), Whitesnake(4))
+        #Using 4 additional heuristics (Anchor(0), ManhattanTransfer(1), NormalEuclidean(2), HighWayStar(3), WorseCompany(4))
         # 0 - Manhattan Distance
-        # 1 - Euclidean squared, greedy
+        # 1 - Normal Euclidean Distance, suboptimal
         # 2 - Favors highways
-        # 3 - Diagonal distance * 1/4, admissible
+        # 3 - Randomzied H value 
 
         self.seqFringe = [[] for i in range(5)]
         self.seqClosed = [{} for i in range(5)]
         
+    def getPath(self, current):
+        totalPath = [current.coordinate]
+        while current.parent != current:
+            current = current.parent
+            totalPath.append(current.coordinate)
+        self.end = timer()
+        print("Time elapsed is", self.end - self.start, "seconds")
+        print("Path is", len(totalPath), "nodes long")
+        for x in range(5):
+            print("Heuristic", x, "has", len(self.seqClosed[x]), "nodes explored")
+        return totalPath
+    
     def getHeuristic(self, vertex, hIndex):
         # 0 - ANCHOR HEURISTIC, EUCLIDEAN DISTANCE
         if hIndex == 0:
@@ -644,7 +788,7 @@ class seqAStarSearcher(aStarSearcher):
             yDistance = m.fabs(self.goalCoordinate[1]-vertex.coordinate[1])
             #m.sqrt(2) - 2 * min(xDistance, yDistance) is how much is saved by going diagonally instead of Manhattan
             return 0.25 * (xDistance + yDistance + (m.sqrt(2) - 2) * min(xDistance, yDistance))
-        # SOMETHING ELSE - SHIT
+        # SOMETHING ELSE
         else:
             return None
         
@@ -656,7 +800,7 @@ class seqAStarSearcher(aStarSearcher):
     
     def updateVertex(self, current, successor, heuristicID):
         #If the successor is new (infinite g value)
-        if current.gVal + self.getEuclideanDistance(current.coordinate, successor.coordinate) < successor.gVal:
+        if current.gVal + self.getCost(current, successor) < successor.gVal:
             #Assigning f,g,h values and parent to successor
             successor.gVal = current.gVal + self.getCost(current, successor)
             successor.hVal = self.getHeuristic(successor, heuristicID)
@@ -701,7 +845,6 @@ class seqAStarSearcher(aStarSearcher):
                 if vertexPeek(self.seqFringe[i]).fVal <= self.w2 * vertexPeek(self.seqFringe[0]).fVal:
                     search = vertexPeek(self.seqFringe[i])
                     if search.coordinate[0] == self.goalCoordinate[0] and search.coordinate[1] == self.goalCoordinate[1]:
-                        print("Path found")
                         return self.getPath(search)
                     else:
                         search = vertexPop(self.seqFringe[i])
@@ -710,60 +853,140 @@ class seqAStarSearcher(aStarSearcher):
                 else:
                     search = vertexPeek(self.seqFringe[0])
                     if search.coordinate[0] == self.goalCoordinate[0] and search.coordinate[1] == self.goalCoordinate[1]:
-                        print("Path found")
                         return self.getPath(search)
                     else:
                         search = vertexPop(self.seqFringe[0])
                         self.expandState(search,0)
                         self.seqClosed[0][search.coordinate] = search
+        print("No path found")
+        self.end = timer()
+        print("Time elapsed is", self.end - self.start, "seconds")
+        for x in range(5):
+            print("Heuristic", x, "has", len(self.seqClosed[x]), "nodes explored")
         return None
+    
 
-def runAStar(which_star):
-    filename = 'test.txt'
-    arrayGen(120, 160, filename)
-    startCoordinate = readStart(filename)
-    goalCoordinate = readGoal(filename)
-    gridWorld = createGrid('test.txt', 120)
-    nodes = [startCoordinate, goalCoordinate]
-    output = None
+
+# In[11]:
+
+
+def runAStar(which_star, hID, inputFile):
+    if inputFile is None:
+        filename = 'test.txt'
+        arrayGen(120, 160, filename)
+        startCoordinate = readStart(filename)
+        goalCoordinate = readGoal(filename)
+        gridWorld = createGrid('test.txt', 120)
+        nodes = [startCoordinate, goalCoordinate]
+        output = None
+    else:
+        startCoordinate = readStart(inputFile)
+        goalCoordinate = readGoal(inputFile)
+        gridWorld = createGrid(inputFile, 120)
+        nodes = [startCoordinate, goalCoordinate]
+        output = None
+        
     if which_star == 1:
-        pathFinder = aStarSearcher(gridWorld, startCoordinate, goalCoordinate)
+        pathFinder = aStarSearcher(gridWorld, startCoordinate, goalCoordinate, hID)
         output = pathFinder.aStarSearch()
-        if output != None:
-            for point in output:
-                gridWorld[point[0]][point[1]] = 'X'
-        aStar(None, title="A*", gridWorld=gridWorld, closedList = pathFinder.closedList, nodes=nodes)
+        aStar(None, title="A*", gridWorld=gridWorld, closedList = pathFinder.closedList, path=output, nodes=nodes)
     elif which_star == 2:
         weight = input("Enter the weight. Please enter a decimal number. Enter 0 for Dijkstra's.")
         while not (isinstance(float(weight), float)):
             weight = input("Invalid input.\nEnter the weight. Please enter a decimal number.Enter 0 for Dijkstra's.")
-        pathFinder = weightedAStarSearcher(gridWorld, startCoordinate, goalCoordinate, float(weight), 'Whof Caress')
+        pathFinder = weightedAStarSearcher(gridWorld, startCoordinate, goalCoordinate, hID, float(weight), 'Whof Caress')
         output = pathFinder.weightedSearch()
-        if output != None:
-            for point in output:
-                gridWorld[point[0]][point[1]] = 'X'
-        aStar(None, title="Weighted A*", gridWorld=gridWorld, closedList = pathFinder.closedList, nodes=nodes)
+        aStar(None, title="Weighted A*", gridWorld=gridWorld, closedList = pathFinder.closedList, path=output, nodes=nodes)
     elif which_star == 3:
         pathFinder = seqAStarSearcher(gridWorld, startCoordinate, goalCoordinate)
         output = pathFinder.seqAStarSearch()
-        if output != None:
-            for point in output:
-                gridWorld[point[0]][point[1]] = 'X'
-        aStar(None, title="Sequential A*", gridWorld=gridWorld, closedList = pathFinder.seqClosed, nodes=nodes, seq=1)
+        aStar(None, title="Sequential A*", gridWorld=gridWorld, closedList = pathFinder.seqClosed, path=output, nodes=nodes, seq=1)
     test.MainLoop()
 
+
+# In[12]:
+
+
+#Creates files containing grids. Names in the format grid_X_Y.txt with X being grid # and Y being coordinate pair number.
+def gridFileGen(filesToMake, coordsToMake):
+    width = 120
+    height = 160
+    for i in range(filesToMake):
+        #Creating loop iteration specific grid.
+        newArr = [[mapNode(0,0) for x in range(height)] for y in range(width)]
+        roughCenters = createRoughTerrain(newArr, width, height)
+        generateHighways(newArr, width, height)
+        createBlocks(newArr, width, height)
+        
+        for j in range(coordsToMake):
+            #Generating filename
+            filename = "grid_" + str(i) + "_" + str(j) + ".txt"
+            
+            #Applying grid features and generating new coordinate pairs
+            start = generateStartandFinish(newArr, width, height)
+            goal = generateStartandFinish(newArr, width, height)
+            while getEuclideanDistance(start, goal) < 100:
+                start = generateStartandFinish(newArr, width, height)
+                goal = generateStartandFinish(newArr, width, height)
+            file = open(filename, 'w')
+            file.write('')
+            file.close()
+            file = open(filename, 'a')
+            file.write(str(start[0]) + ',' + str(start[1]) + '\n')
+            file.write(str(goal[0]) + ',' + str(goal[1]) + '\n')
+            for coordinate in roughCenters:
+                file.write(str(coordinate[0]) + ',' + str(coordinate[1]) + '\n')
+            #Write a 0 for impassable, 1 for normal, 2 for rough, a for highway, and b for rough highway
+            for x in range(width):
+                for y in range(height):
+                    if newArr[x][y].block == 2:
+                        file.write('0')
+                    elif newArr[x][y].block == 1:
+                        if newArr[x][y].highway == 0:
+                            file.write('2')
+                        else:
+                            file.write('b')
+                    else:
+                        if newArr[x][y].highway == 0:
+                            file.write('1')
+                        else:
+                            file.write('a')
+                file.write('\n')
+            file.close()
+            
+
+
+# In[13]:
+
+
 def main(bad):
-    AType = input(bad + "Please choose which A Star you want to use. Would you like to use:\n1) A Star\n2) Weighted A Star\n3) Sequential A Star\n")
-    if (not isinstance(int(AType), int)):
-        return -1
-    if int(AType) <= 0 or int(AType) >= 4:
-        return -1
-    runAStar(int(AType))
+    doChoice = input(bad + "Run Search or Create Grids? 1) for search, 2) for grids\n")
+    if int(doChoice) == 1:
+        AType = input(bad + "Please choose which A Star you want to use. Would you like to use:\n1) A Star\n2) Weighted A Star\n3) Sequential A Star\n")
+        if (not isinstance(int(AType), int)):
+            return -1
+        if int(AType) <= 0 or int(AType) >= 4:
+            return -1
+        HType = 0
+        if (int(AType) != 3):
+            HType = input(bad + "Please choose a heuristic to use. Would you like to use: \n0) Euclidean Distance \n1) Manhattan Distance \n2) Euclidean Distance Squared \n3) Highway Preference \n4) Diagonal Distance\n")
+        FType = input(bad + "Please enter grid file name to run search on. Leave blank to auto-generate grid file.\n")
+        runAStar(int(AType), int(HType), FType)
+    elif int(doChoice) == 2:
+        numGrids = input("Please choose how many grids to make. Default is 1.\n")
+        numCoords = input("Please choose how many coordinate pairs to make per grid. Default is 1.\n")
+        gridFileGen(int(numGrids), int(numCoords))
+    
     return 1
 
-test = None
-test = wx.App()
-AStarType = main("")
-while aStar == -1:
-    AStarType = main("Invalid input. ")
-i = 0
+
+# In[14]:
+
+
+i = 1
+while i == 1:
+    test = None
+    test = wx.App()
+    AStarType = main("")
+    while aStar == -1:
+        AStarType = main("Invalid input. ")
